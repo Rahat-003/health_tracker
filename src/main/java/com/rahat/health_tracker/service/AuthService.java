@@ -61,8 +61,6 @@ public class AuthService {
     }
 
     public LogInResponseDto loginUser(LogInRequestDto request) {
-        System.out.println("hello: " + request.getEmail());
-
         // Check if user exists by email
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new EmailNotFoundException(request.getEmail()));

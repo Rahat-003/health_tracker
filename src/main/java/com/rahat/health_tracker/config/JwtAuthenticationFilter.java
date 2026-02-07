@@ -5,7 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jspecify.annotations.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.util.List;
 
 
-
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -27,50 +27,61 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> EXCLUDED_URLS = List.of(
             "/api/v1/auth/**",
-            "/api/v1/admin/**",
+            "/swagger-ui.html",
             "/swagger-ui/**",
-            "/v3/api-docs/**"
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**"
     );
-
-
-    public JwtAuthenticationFilter(JwtService jwtService) {
-        this.jwtService = jwtService;
-    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return EXCLUDED_URLS.stream().anyMatch(p -> pathMatcher.match(p, path));
+        return EXCLUDED_URLS.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
+
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        System.out.println("Hello");
+        System.out.println("uri: " + request.getRequestURI() );
+        if (shouldNotFilter(request)) { // skip everything for swagger + auth
+            filterChain.doFilter(request, response);
+            return;
+        }
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        // No token? just continue (important for public endpoints)
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
-            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            String token = authHeader.substring(7);
+            String username = jwtService.extractUsername(token);
 
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                String username = jwtService.extractUsername(token);
-
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    if (jwtService.isTokenValid(token)) {
-                        UsernamePasswordAuthenticationToken auth =
-                                new UsernamePasswordAuthenticationToken(username, null, List.of());
-                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                    }
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (jwtService.isTokenValid(token)) {
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(username, null, List.of());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
 
-            filterChain.doFilter(request, response);
-
         } catch (ExpiredJwtException e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT expired");
+            return; // stop filter chain
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT invalid");
+            return; // stop filter chain
         }
-    }
 
+        filterChain.doFilter(request, response);
+    }
 }
