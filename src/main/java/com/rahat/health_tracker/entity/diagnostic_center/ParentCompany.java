@@ -26,10 +26,10 @@ import java.util.UUID;
 public class ParentCompany {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @SequenceGenerator(name = "parent_company_id_sequence", sequenceName = "parent_company_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "parent_company_id_sequence")
+    @Column(name = "parent_company_id")
+    private Long Id;
 
     @Column(name = "company_name")
     private String companyName;

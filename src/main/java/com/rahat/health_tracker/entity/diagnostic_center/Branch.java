@@ -1,13 +1,14 @@
 package com.rahat.health_tracker.entity.diagnostic_center;
 
 
+import com.rahat.health_tracker.entity.doctor.DoctorProfile;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Entity
 @Table(
@@ -25,10 +26,10 @@ import java.util.UUID;
 public class Branch {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @SequenceGenerator(name = "branch_id_sequence", sequenceName = "branch_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branch_id_sequence")
+    @Column(name = "branch_id")
+    private Long Id;
 
     @ManyToOne
     @JoinColumn(name = "parent_company_id")
@@ -47,6 +48,16 @@ public class Branch {
     @Column(name = "is_enabled")
     private Boolean isEnabled;
 
+    private Double latitude;
+
+    private Double longitude;
+
     @Column(name = "branch_address", nullable = false)
     private String branchAddress;
+
+    private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "branch")
+    private Set<Room> rooms;
+
 }

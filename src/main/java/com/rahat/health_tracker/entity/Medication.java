@@ -6,6 +6,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,12 +19,13 @@ import java.util.UUID;
 public class Medication {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME) // UUID v7
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @SequenceGenerator(name = "medication_id_sequence", sequenceName = "medication_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "medication_id_sequence")
+    @Column(name = "medication_id")
+    private Long medicationId;
 
-    @Column(name = "medicine_name")
+    @ManyToOne
+    @JoinColumn(name = "medicine_name", nullable = false)
     private Medicine medicine;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

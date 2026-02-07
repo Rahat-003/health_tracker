@@ -38,7 +38,7 @@ public class ChronicDisease {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "health_profile_id", nullable = false)
-    private HealthProfile healthProfile;
+    private UserProfile userProfile;
 
     // =================== Audit ===================
 

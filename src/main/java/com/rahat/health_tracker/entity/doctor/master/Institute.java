@@ -17,10 +17,10 @@ import java.util.UUID;
 public class Institute {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @SequenceGenerator(name = "institute_id_sequence", sequenceName = "institute_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "institute_id_sequence")
+    @Column(name = "institute_id")
+    private Long Id;
 
     @Column(nullable = false, unique = true, length = 200)
     private String name;

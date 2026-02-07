@@ -23,11 +23,10 @@ import java.util.UUID;
 public class DailyHealthMetrics {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME) // UUID v7
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
-
+    @SequenceGenerator(name = "disease_id_sequence", sequenceName = "disease_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "disease_id_sequence")
+    @Column(name = "disease_id")
+    private Long Id;
     // =================== Date ===================
 
     @Column(name = "metric_date", nullable = false)

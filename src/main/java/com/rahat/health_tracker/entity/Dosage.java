@@ -16,10 +16,11 @@ import java.util.UUID;
 public class Dosage {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME) // UUID v7
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @SequenceGenerator(name = "dosage_id_sequence", sequenceName = "dosage_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "dosage_id_sequence")
+    @Column(name = "dosage_id")
+    private Long dosageId;
+
 
     @Column(nullable = false, length = 50)
     private String amount;       // 500mg, 10ml

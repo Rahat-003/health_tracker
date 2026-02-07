@@ -16,15 +16,17 @@ import java.util.UUID;
 @Builder
 public class UserDiseaseHistory {
 
+
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @SequenceGenerator(name = "user_disease_hist_id_sequence", sequenceName = "user_disease_hist_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_disease_hist_id_sequence")
+    @Column(name = "id")
+    private Long Id;
+
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "health_profile_id", nullable = false)
-    private HealthProfile healthProfile;
+    @JoinColumn(name = "user_profile_id", nullable = false)
+    private UserProfile userProfile;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "disease_id", nullable = false)

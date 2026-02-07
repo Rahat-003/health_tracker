@@ -16,11 +16,11 @@ import java.util.UUID;
 public class Disease {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
-
+    @SequenceGenerator(name = "disease_id_sequence", sequenceName = "disease_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "disease_id_sequence")
+    @Column(name = "disease_id")
+    private Long Id;
+    
     @Column(nullable = false, unique = true, length = 150)
     private String name;
 

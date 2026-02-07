@@ -1,14 +1,14 @@
 package com.rahat.health_tracker.entity;
 
+import com.rahat.health_tracker.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -20,10 +20,9 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME) // UUID v7 / time-ordered
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id")
+    private String userId;
 
     @Column(nullable = false)
     private String firstName;
@@ -44,9 +43,6 @@ public class User {
     @Column
     private Gender gender;
 
-    @Column
-    private Boolean smoker;
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -55,13 +51,7 @@ public class User {
     // =================== Relationships ===================
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private HealthProfile healthProfile;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Activity> activities = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    private List<NutritionLog> nutritionLogs = new ArrayList<>();
+    private UserProfile userProfile;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<DailyHealthMetrics> dailyHealthMetrics = new ArrayList<>();
@@ -72,55 +62,14 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<DoctorVisit> doctorVisits = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<SymptomLog> symptomLogs = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<DiagnosticReport> diagnosticReports = new ArrayList<>();
-
-    // =================== Helper Methods ===================
-
-    public void addActivity(Activity activity) {
-        activities.add(activity);
-        activity.setUser(this);
-    }
-
-//    public void addNutritionLog(NutritionLog log) {
-//        nutritionLogs.add(log);
-//        log.setUser(this);
-//    }
-
-    public void addDailyHealthMetric(DailyHealthMetrics metric) {
-        dailyHealthMetrics.add(metric);
-        metric.setUser(this);
-    }
-
-    public void setHealthProfile(HealthProfile profile) {
-        this.healthProfile = profile;
-        profile.setUser(this);
-    }
-
-    public void addMedication(Medication medication) {
-        medications.add(medication);
-        medication.setUser(this);
-    }
-
-    public void addDoctorVisit(DoctorVisit visit) {
-        doctorVisits.add(visit);
-        visit.setUser(this);
-    }
-
-    public void addSymptomLog(SymptomLog log) {
-        symptomLogs.add(log);
-        log.setUser(this);
-    }
-
-    public void addDiagnosticReport(DiagnosticReport report) {
-        diagnosticReports.add(report);
-        report.setUser(this);
-    }
-
-    // =================== Lifecycle Hooks ===================
 
     @PrePersist
     public void prePersist() {

@@ -8,6 +8,7 @@ public enum MedicineType {
     INJECTION,
     OINTMENT,
     CAPSULE,
+    CREAM,
     DROPS,
     INHALER
 }

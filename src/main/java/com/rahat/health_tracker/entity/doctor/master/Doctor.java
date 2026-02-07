@@ -21,11 +21,11 @@ import java.util.UUID;
 @Builder
 public class Doctor {
 
+
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @Column(columnDefinition = "CHAR(36)")
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "doctor_id")
+    private String doctorId;
 
     @Column(nullable = false, length = 200)
     private String fullName; // DR. KAZI HANNANUR RAHMAN (JEWEL)
