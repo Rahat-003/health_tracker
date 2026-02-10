@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -30,6 +28,7 @@ public class UserRefreshToken {
     private LocalDateTime expiresAt;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 }
 

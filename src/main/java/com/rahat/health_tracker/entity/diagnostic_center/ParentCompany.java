@@ -4,9 +4,6 @@ package com.rahat.health_tracker.entity.diagnostic_center;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
-
-import java.util.UUID;
 
 
 @Entity
@@ -15,7 +12,7 @@ import java.util.UUID;
     uniqueConstraints = {
         @UniqueConstraint(columnNames = "company_name"),
         @UniqueConstraint(columnNames = "email"),
-        @UniqueConstraint(columnNames = "phone")
+        @UniqueConstraint(columnNames = "phone_no")
     }
 )
 @Getter
@@ -29,7 +26,7 @@ public class ParentCompany {
     @SequenceGenerator(name = "parent_company_id_sequence", sequenceName = "parent_company_seq", initialValue = 1, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "parent_company_id_sequence")
     @Column(name = "parent_company_id")
-    private Long Id;
+    private Long id;
 
     @Column(name = "company_name")
     private String companyName;

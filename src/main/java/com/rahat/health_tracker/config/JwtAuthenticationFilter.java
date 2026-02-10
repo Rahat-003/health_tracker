@@ -47,15 +47,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("Hello");
-        System.out.println("uri: " + request.getRequestURI() );
         if (shouldNotFilter(request)) { // skip everything for swagger + auth
             filterChain.doFilter(request, response);
             return;
         }
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        // No token? just continue (important for public endpoints)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;

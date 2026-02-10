@@ -1,89 +1,84 @@
-package com.rahat.health_tracker.service;
+package com.rahat.health_tracker.service.auth;
 
 import com.rahat.health_tracker.config.JwtService;
-import com.rahat.health_tracker.dto.request.user.LogInRequestDto;
-import com.rahat.health_tracker.dto.request.user.UserRegistrationRequest;
+import com.rahat.health_tracker.dto.request.auth.LogInRequestDto;
+import com.rahat.health_tracker.dto.request.auth.ParentRegistrationRequest;
 import com.rahat.health_tracker.dto.response.LogInResponseDto;
-import com.rahat.health_tracker.dto.response.UserResponseDto;
-import com.rahat.health_tracker.entity.User;
-import com.rahat.health_tracker.entity.UserRefreshToken;
+import com.rahat.health_tracker.dto.response.ParentResponseDto;
+import com.rahat.health_tracker.entity.diagnostic_center.ParentCompany;
+import com.rahat.health_tracker.entity.diagnostic_center.ParentRefreshToken;
 import com.rahat.health_tracker.exception.auth.EmailAlreadyExistsException;
 import com.rahat.health_tracker.exception.auth.EmailNotFoundException;
 import com.rahat.health_tracker.exception.auth.IncorrectPasswordException;
-import com.rahat.health_tracker.repository.UserRefreshTokenRepository;
-import com.rahat.health_tracker.repository.UserRepository;
+import com.rahat.health_tracker.repository.ParentCompanyRepository;
+import com.rahat.health_tracker.repository.ParentRefreshTokenRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class AuthService {
-    private final UserRepository userRepository;
+@RequiredArgsConstructor
+public class AuthParentService {
+    private final ParentCompanyRepository parentCompanyRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final UserRefreshTokenRepository userRefreshTokenRepository;
+    private final ParentRefreshTokenRepository parentRefreshTokenRepository;
 
     private static final Long accessTokenExpiry = 15 * 60L; // 15 minutes in seconds
     private static final Long refreshTokenExpiry = 7 * 24 * 3600L; // 7 days in seconds
 
-    public AuthService(UserRepository userRepository,
-                       BCryptPasswordEncoder passwordEncoder,
-                       JwtService jwtService,
-                       UserRefreshTokenRepository userRefreshTokenRepository) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.userRefreshTokenRepository = userRefreshTokenRepository;
-    }
 
-    public UserResponseDto registerUser(UserRegistrationRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            System.out.println("email exists: " + request.getEmail());
+    public ParentResponseDto parentCompanyRegister(ParentRegistrationRequest request) {
+        if (parentCompanyRepository.existsByEmail(request.getEmail())) {
+//            System.out.println("email exists: " + request.getEmail());
             throw new EmailAlreadyExistsException(request.getEmail());
         }
-        User user = User.builder()
+        ParentCompany parentCompany = ParentCompany.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .companyName(request.getCompanyName())
+                .phoneNo(request.getPhoneNo())
+                .isEnabled(true)
                 .build();
 
-        User savedUser = userRepository.save(user);
+        ParentCompany saved = parentCompanyRepository.save(parentCompany);
 
-        return UserResponseDto.builder()
-                .id(savedUser.getUserId())
-                .email(savedUser.getEmail())
+        return ParentResponseDto.builder()
+                .id(saved.getId())
+                .email(saved.getEmail())
+                .phoneNo(saved.getPhoneNo())
+                .companyName(saved.getCompanyName())
                 .build();
     }
 
-    public LogInResponseDto loginUser(LogInRequestDto request) {
-        // Check if user exists by email
-        User user = userRepository.findByEmail(request.getEmail())
+    public LogInResponseDto loginParentCompany(LogInRequestDto request) {
+        // Check if parentCompany exists by email
+        ParentCompany parentCompany = parentCompanyRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new EmailNotFoundException(request.getEmail()));
 
         // Check if password matches
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), parentCompany.getPassword())) {
             throw new IncorrectPasswordException(request.getEmail());
         }
 
         // Generate access token (short-lived)
-        String accessToken = jwtService.generateToken(user.getEmail());
+        String accessToken = jwtService.generateToken(parentCompany.getEmail());
 
         // Generate refresh token (long-lived)
         String refreshToken = UUID.randomUUID().toString();
 
         // Save refresh token in DB
-        UserRefreshToken userRefreshToken = UserRefreshToken.builder()
-                .user(user)
+        com.rahat.health_tracker.entity.diagnostic_center.ParentRefreshToken parentRefreshToken = com.rahat.health_tracker.entity.diagnostic_center.ParentRefreshToken.builder()
+                .parentCompany(parentCompany)
                 .refreshToken(refreshToken)
                 .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpiry))
                 .build();
 
-        userRefreshTokenRepository.save(userRefreshToken);
+        parentRefreshTokenRepository.save(parentRefreshToken);
 
         // Return response
         return LogInResponseDto.builder()
@@ -100,31 +95,31 @@ public class AuthService {
     @Transactional
     public LogInResponseDto refreshAccessToken(String refreshToken) {
         // Find the existing refresh token
-        UserRefreshToken token = userRefreshTokenRepository.findByRefreshToken(refreshToken)
+        ParentRefreshToken token = parentRefreshTokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
 
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Refresh token expired");
         }
 
-        User user = token.getUser();
+        ParentCompany parentCompany = token.getParentCompany();
 
         // Generate new access token
-        String newAccessToken = jwtService.generateToken(user.getEmail());
+        String newAccessToken = jwtService.generateToken(parentCompany.getEmail());
 
         // Generate new refresh token
         String newRefreshToken = UUID.randomUUID().toString();
         LocalDateTime newRefreshExpiresAt = LocalDateTime.now().plusSeconds(refreshTokenExpiry);
 
         // Save new refresh token and delete old one
-        UserRefreshToken newTokenEntity = new UserRefreshToken();
-        newTokenEntity.setUser(user);
-        newTokenEntity.setRefreshToken(newRefreshToken);
-        newTokenEntity.setExpiresAt(newRefreshExpiresAt);
-        userRefreshTokenRepository.save(newTokenEntity);
+        ParentRefreshToken parentRefreshToken = new ParentRefreshToken();
+        parentRefreshToken.setParentCompany(parentCompany);
+        parentRefreshToken.setRefreshToken(newRefreshToken);
+        parentRefreshToken.setExpiresAt(newRefreshExpiresAt);
+        parentRefreshTokenRepository.save(parentRefreshToken);
 
         // Delete old refresh token
-        userRefreshTokenRepository.delete(token);
+        parentRefreshTokenRepository.delete(token);
 
         // Return updated tokens to client
         return LogInResponseDto.builder()

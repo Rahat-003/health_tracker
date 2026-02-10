@@ -1,11 +1,9 @@
 package com.rahat.health_tracker.entity.diagnostic_center;
 
 
-import com.rahat.health_tracker.entity.doctor.DoctorProfile;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -29,7 +27,10 @@ public class Branch {
     @SequenceGenerator(name = "branch_id_sequence", sequenceName = "branch_seq", initialValue = 1, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branch_id_sequence")
     @Column(name = "branch_id")
-    private Long Id;
+    private Long id;
+
+    @Column(name = "branch_name", nullable = false)
+    private String branchName;
 
     @ManyToOne
     @JoinColumn(name = "parent_company_id")
@@ -56,6 +57,8 @@ public class Branch {
     private String branchAddress;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "branch")
     private Set<Room> rooms;

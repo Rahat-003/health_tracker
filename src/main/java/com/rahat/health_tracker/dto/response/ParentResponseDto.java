@@ -7,8 +7,9 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class UserResponseDto {
-    private String id;
+public class ParentResponseDto {
+    private Long id;
     private String email;
-    private String name;
+    private String phoneNo;
+    private String companyName;
 }

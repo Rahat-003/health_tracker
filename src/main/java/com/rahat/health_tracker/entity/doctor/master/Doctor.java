@@ -9,6 +9,7 @@ import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -28,7 +29,7 @@ public class Doctor {
     private String doctorId;
 
     @Column(nullable = false, length = 200)
-    private String fullName; // DR. KAZI HANNANUR RAHMAN (JEWEL)
+    private String name; // DR. KAZI HANNANUR RAHMAN (JEWEL)
 
     @Email
     @Column(nullable = false, unique = true)
@@ -40,8 +41,8 @@ public class Doctor {
     @OneToOne(mappedBy = "doctor", cascade = CascadeType.ALL, optional = false)
     private DoctorProfile profile;
 
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
-    private LocalDate updatedAt;
+    private LocalDateTime updatedAt;
 
 }

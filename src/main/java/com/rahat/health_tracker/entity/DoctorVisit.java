@@ -4,10 +4,8 @@ package com.rahat.health_tracker.entity;
 import com.rahat.health_tracker.entity.doctor.master.Doctor;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Table(name = "doctor_visit")

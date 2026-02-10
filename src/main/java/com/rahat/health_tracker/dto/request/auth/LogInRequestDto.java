@@ -1,8 +1,6 @@
-package com.rahat.health_tracker.dto.request.user;
+package com.rahat.health_tracker.dto.request.auth;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LogInRequestDto {
+    @Email
     private String email;
     private String password;
 }
