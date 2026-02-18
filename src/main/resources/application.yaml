@@ -6,7 +6,8 @@ spring:
     time-zone: ${user.timezone}
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/health_tracker
+#    url: jdbc:postgresql://localhost:5433/health_tracker
+    url: jdbc:postgresql://localhost:5433/health_tracker?options=-c%20TimeZone=Asia/Dhaka
     username: postgres
     password: 1234
     driver-class-name: org.postgresql.Driver
@@ -18,8 +19,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        jdbc:
-          time_zone: UTC
+#        jdbc:
+#          time_zone: UTC +6
 
 admin:
   username: admin
@@ -28,7 +29,12 @@ admin:
 
 jwt:
   secret: rYr156a2F01sX4A7Cv+6/mQa0zZbO8GhEbIuJ+Nrbk0=
-  expiration: 900000
+#  expiration: 900000
+#  access-token-expiry: 900       # 15 minutes in seconds
+#  refresh-token-expiry: 604800   # 7 days in seconds
+  expiration: 86400_000
+  access-token-expiry: 86400       # 1 day in seconds
+  refresh-token-expiry: 604800   # 7 days in seconds
 
 frontend: { url: http://localhost:3000 }
   

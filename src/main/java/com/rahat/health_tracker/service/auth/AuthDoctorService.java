@@ -1,12 +1,11 @@
 package com.rahat.health_tracker.service.auth;
 
-import com.rahat.health_tracker.config.JwtService;
+import com.rahat.health_tracker.enums.Role;
+import com.rahat.health_tracker.security.JwtService;
 import com.rahat.health_tracker.dto.request.auth.DoctorRegistrationRequest;
 import com.rahat.health_tracker.dto.request.auth.LogInRequestDto;
 import com.rahat.health_tracker.dto.response.DoctorResponseDto;
 import com.rahat.health_tracker.dto.response.LogInResponseDto;
-import com.rahat.health_tracker.entity.User;
-import com.rahat.health_tracker.entity.UserRefreshToken;
 import com.rahat.health_tracker.entity.doctor.DoctorRefreshToken;
 import com.rahat.health_tracker.entity.doctor.master.Doctor;
 import com.rahat.health_tracker.exception.auth.EmailAlreadyExistsException;
@@ -16,6 +15,7 @@ import com.rahat.health_tracker.repository.DoctorRefreshTokenRepository;
 import com.rahat.health_tracker.repository.DoctorRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,9 +30,11 @@ public class AuthDoctorService {
     private final JwtService jwtService;
     private final DoctorRefreshTokenRepository doctorRefreshTokenRepository;
 
-    private static final Long accessTokenExpiry = 15 * 60L; // 15 minutes in seconds
-    private static final Long refreshTokenExpiry = 7 * 24 * 3600L; // 7 days in seconds
+    @Value("${jwt.access-token-expiry}")
+    private Long accessTokenExpiry;
 
+    @Value("${jwt.refresh-token-expiry}")
+    private Long refreshTokenExpiry;
 
     public DoctorResponseDto registerUser(DoctorRegistrationRequest request) {
         if (doctorRepository.existsByEmail(request.getEmail())) {
@@ -42,6 +44,7 @@ public class AuthDoctorService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
+                .role(Role.DOCTOR)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -66,7 +69,7 @@ public class AuthDoctorService {
         }
 
         // Generate access token (short-lived)
-        String accessToken = jwtService.generateToken(doctor.getEmail());
+        String accessToken = jwtService.generateToken(doctor.getEmail(), Role.DOCTOR);
 
         // Generate refresh token (long-lived)
         String refreshToken = UUID.randomUUID().toString();
@@ -105,7 +108,7 @@ public class AuthDoctorService {
         Doctor doctor = token.getDoctor();
 
         // Generate new access token
-        String newAccessToken = jwtService.generateToken(doctor.getEmail());
+        String newAccessToken = jwtService.generateToken(doctor.getEmail(), Role.DOCTOR);
 
         // Generate new refresh token
         String newRefreshToken = UUID.randomUUID().toString();

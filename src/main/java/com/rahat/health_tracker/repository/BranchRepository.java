@@ -12,4 +12,6 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
 
     Optional<Branch> findByEmail(String email);
 
+    Optional<Branch> findByEmailAndIsEnabled(String email, Boolean isEnabled);
+
 }

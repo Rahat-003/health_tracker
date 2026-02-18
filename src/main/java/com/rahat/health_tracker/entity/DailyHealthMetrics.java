@@ -24,7 +24,7 @@ public class DailyHealthMetrics {
     @SequenceGenerator(name = "disease_id_sequence", sequenceName = "disease_seq", initialValue = 1, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "disease_id_sequence")
     @Column(name = "disease_id")
-    private Long Id;
+    private Long id;
     // =================== Date ===================
 
     @Column(name = "metric_date", nullable = false)

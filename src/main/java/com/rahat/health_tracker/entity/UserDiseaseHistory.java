@@ -21,7 +21,7 @@ public class UserDiseaseHistory {
     @SequenceGenerator(name = "user_disease_hist_id_sequence", sequenceName = "user_disease_hist_seq", initialValue = 1, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_disease_hist_id_sequence")
     @Column(name = "id")
-    private Long Id;
+    private Long id;
 
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

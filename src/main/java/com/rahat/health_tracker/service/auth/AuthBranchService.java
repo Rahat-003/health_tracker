@@ -1,6 +1,7 @@
 package com.rahat.health_tracker.service.auth;
 
-import com.rahat.health_tracker.config.JwtService;
+import com.rahat.health_tracker.enums.Role;
+import com.rahat.health_tracker.security.JwtService;
 import com.rahat.health_tracker.dto.request.auth.BranchRegistrationRequest;
 import com.rahat.health_tracker.dto.request.auth.LogInRequestDto;
 import com.rahat.health_tracker.dto.response.BranchResponseDto;
@@ -17,6 +18,7 @@ import com.rahat.health_tracker.repository.BranchRepository;
 import com.rahat.health_tracker.repository.ParentCompanyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,9 +34,12 @@ public class AuthBranchService {
     private final BranchRefreshTokenRepository branchRefreshTokenRepository;
     private final ParentCompanyRepository parentCompanyRepository;
 
-    private static final Long accessTokenExpiry = 15 * 60L; // 15 minutes in seconds
-    private static final Long refreshTokenExpiry = 7 * 24 * 3600L; // 7 days in seconds
 
+    @Value("${jwt.access-token-expiry}")
+    private Long accessTokenExpiry;
+
+    @Value("${jwt.refresh-token-expiry}")
+    private Long refreshTokenExpiry;
 
     public BranchResponseDto registerBranch(BranchRegistrationRequest request) {
         if (branchRepository.existsByEmail(request.getEmail())) {
@@ -54,6 +59,7 @@ public class AuthBranchService {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .branchAddress(request.getBranchAddress())
+                .role(Role.BRANCH_ADMIN)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -82,7 +88,7 @@ public class AuthBranchService {
         }
 
         // Generate access token (short-lived)
-        String accessToken = jwtService.generateToken(branch.getEmail());
+        String accessToken = jwtService.generateToken(branch.getEmail(), Role.BRANCH_ADMIN);
 
         // Generate refresh token (long-lived)
         String refreshToken = UUID.randomUUID().toString();
@@ -120,7 +126,7 @@ public class AuthBranchService {
         Branch branch = token.getBranch();
 
         // Generate new access token
-        String newAccessToken = jwtService.generateToken(branch.getEmail());
+        String newAccessToken = jwtService.generateToken(branch.getEmail(), Role.BRANCH_ADMIN);
 
         // Generate new refresh token
         String newRefreshToken = UUID.randomUUID().toString();

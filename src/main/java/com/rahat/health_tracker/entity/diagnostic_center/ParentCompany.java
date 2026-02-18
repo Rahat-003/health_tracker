@@ -2,6 +2,7 @@ package com.rahat.health_tracker.entity.diagnostic_center;
 
 
 
+import com.rahat.health_tracker.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,4 +43,7 @@ public class ParentCompany {
 
     @Column(name = "is_enabled")
     private Boolean isEnabled;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }

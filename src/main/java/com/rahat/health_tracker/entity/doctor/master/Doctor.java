@@ -3,6 +3,7 @@ package com.rahat.health_tracker.entity.doctor.master;
 
 
 import com.rahat.health_tracker.entity.doctor.DoctorProfile;
+import com.rahat.health_tracker.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -38,8 +39,12 @@ public class Doctor {
     @Column(nullable = false)
     private String password;
 
-    @OneToOne(mappedBy = "doctor", cascade = CascadeType.ALL, optional = false)
-    private DoctorProfile profile;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+//    @OneToOne(mappedBy = "doctor", cascade = CascadeType.ALL, optional = false)
+//    private DoctorProfile profile;
 
     private LocalDateTime createdAt;
 

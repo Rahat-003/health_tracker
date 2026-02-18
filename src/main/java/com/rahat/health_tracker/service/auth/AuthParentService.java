@@ -1,6 +1,7 @@
 package com.rahat.health_tracker.service.auth;
 
-import com.rahat.health_tracker.config.JwtService;
+import com.rahat.health_tracker.enums.Role;
+import com.rahat.health_tracker.security.JwtService;
 import com.rahat.health_tracker.dto.request.auth.LogInRequestDto;
 import com.rahat.health_tracker.dto.request.auth.ParentRegistrationRequest;
 import com.rahat.health_tracker.dto.response.LogInResponseDto;
@@ -14,6 +15,7 @@ import com.rahat.health_tracker.repository.ParentCompanyRepository;
 import com.rahat.health_tracker.repository.ParentRefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +30,11 @@ public class AuthParentService {
     private final JwtService jwtService;
     private final ParentRefreshTokenRepository parentRefreshTokenRepository;
 
-    private static final Long accessTokenExpiry = 15 * 60L; // 15 minutes in seconds
-    private static final Long refreshTokenExpiry = 7 * 24 * 3600L; // 7 days in seconds
+    @Value("${jwt.access-token-expiry}")
+    private Long accessTokenExpiry;
 
+    @Value("${jwt.refresh-token-expiry}")
+    private Long refreshTokenExpiry;
 
     public ParentResponseDto parentCompanyRegister(ParentRegistrationRequest request) {
         if (parentCompanyRepository.existsByEmail(request.getEmail())) {
@@ -43,6 +47,7 @@ public class AuthParentService {
                 .companyName(request.getCompanyName())
                 .phoneNo(request.getPhoneNo())
                 .isEnabled(true)
+                .role(Role.COMPANY_ADMIN)
                 .build();
 
         ParentCompany saved = parentCompanyRepository.save(parentCompany);
@@ -66,13 +71,13 @@ public class AuthParentService {
         }
 
         // Generate access token (short-lived)
-        String accessToken = jwtService.generateToken(parentCompany.getEmail());
+        String accessToken = jwtService.generateToken(parentCompany.getEmail(), Role.COMPANY_ADMIN);
 
         // Generate refresh token (long-lived)
         String refreshToken = UUID.randomUUID().toString();
 
         // Save refresh token in DB
-        com.rahat.health_tracker.entity.diagnostic_center.ParentRefreshToken parentRefreshToken = com.rahat.health_tracker.entity.diagnostic_center.ParentRefreshToken.builder()
+        ParentRefreshToken parentRefreshToken = com.rahat.health_tracker.entity.diagnostic_center.ParentRefreshToken.builder()
                 .parentCompany(parentCompany)
                 .refreshToken(refreshToken)
                 .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpiry))
@@ -105,7 +110,7 @@ public class AuthParentService {
         ParentCompany parentCompany = token.getParentCompany();
 
         // Generate new access token
-        String newAccessToken = jwtService.generateToken(parentCompany.getEmail());
+        String newAccessToken = jwtService.generateToken(parentCompany.getEmail(), Role.COMPANY_ADMIN);
 
         // Generate new refresh token
         String newRefreshToken = UUID.randomUUID().toString();

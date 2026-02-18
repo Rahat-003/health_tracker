@@ -1,6 +1,7 @@
 package com.rahat.health_tracker.entity.diagnostic_center;
 
 
+import com.rahat.health_tracker.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -60,7 +61,10 @@ public class Branch {
 
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "branch")
-    private Set<Room> rooms;
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+//    @OneToMany(mappedBy = "branch")
+//    private Set<Room> rooms;
 
 }

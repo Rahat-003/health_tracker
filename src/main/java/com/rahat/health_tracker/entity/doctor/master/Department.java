@@ -3,9 +3,7 @@ package com.rahat.health_tracker.entity.doctor.master;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
 
-import java.util.UUID;
 
 @Entity
 @Table(name = "department")
@@ -17,10 +15,10 @@ import java.util.UUID;
 public class Department {
 
     @Id
-    @SequenceGenerator(name = "department_id_sequence", sequenceName = "department_seq", initialValue = 1, allocationSize = 1)
+    @SequenceGenerator(name = "department_id_sequence", sequenceName = "department_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "department_id_sequence")
     @Column(name = "department_id")
-    private Long Id;
+    private Long id;
 
     @Column(nullable = false, unique = true, length = 200)
     private String name;

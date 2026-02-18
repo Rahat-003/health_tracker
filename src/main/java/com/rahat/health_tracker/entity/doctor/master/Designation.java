@@ -20,7 +20,7 @@ public class Designation {
     @SequenceGenerator(name = "designation_id_sequence", sequenceName = "designation_seq", initialValue = 1, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "designation_id_sequence")
     @Column(name = "designation_id")
-    private Long Id;
+    private Long id;
 
     @Column(nullable = false, unique = true, length = 100)
     private String title;

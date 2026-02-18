@@ -19,7 +19,7 @@ public class Specialty {
     @SequenceGenerator(name = "specialty_id_sequence", sequenceName = "specialty_seq", initialValue = 1, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "specialty_id_sequence")
     @Column(name = "specialty_id")
-    private Long Id;
+    private Long id;
 
     @Column(nullable = false, unique = true, length = 150)
     private String name;

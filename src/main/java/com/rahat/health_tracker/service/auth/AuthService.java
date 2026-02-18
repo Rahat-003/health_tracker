@@ -1,6 +1,7 @@
 package com.rahat.health_tracker.service.auth;
 
-import com.rahat.health_tracker.config.JwtService;
+import com.rahat.health_tracker.enums.Role;
+import com.rahat.health_tracker.security.JwtService;
 import com.rahat.health_tracker.dto.request.auth.LogInRequestDto;
 import com.rahat.health_tracker.dto.request.auth.UserRegistrationRequest;
 import com.rahat.health_tracker.dto.response.LogInResponseDto;
@@ -13,6 +14,7 @@ import com.rahat.health_tracker.exception.auth.IncorrectPasswordException;
 import com.rahat.health_tracker.repository.UserRefreshTokenRepository;
 import com.rahat.health_tracker.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +29,11 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserRefreshTokenRepository userRefreshTokenRepository;
 
-    private static final Long accessTokenExpiry = 15 * 60L; // 15 minutes in seconds
-    private static final Long refreshTokenExpiry = 7 * 24 * 3600L; // 7 days in seconds
+    @Value("${jwt.access-token-expiry}")
+    private Long accessTokenExpiry;
+
+    @Value("${jwt.refresh-token-expiry}")
+    private Long refreshTokenExpiry;
 
     public AuthService(UserRepository userRepository,
                        BCryptPasswordEncoder passwordEncoder,
@@ -71,7 +76,7 @@ public class AuthService {
         }
 
         // Generate access token (short-lived)
-        String accessToken = jwtService.generateToken(user.getEmail());
+        String accessToken = jwtService.generateToken(user.getEmail(), Role.USER);
 
         // Generate refresh token (long-lived)
         String refreshToken = UUID.randomUUID().toString();
@@ -84,6 +89,9 @@ public class AuthService {
                 .build();
 
         userRefreshTokenRepository.save(userRefreshToken);
+
+        System.out.println("Hello: expire " + LocalDateTime.now().plusSeconds(refreshTokenExpiry));
+        System.out.println("saved at db: " + userRefreshToken.getExpiresAt());
 
         // Return response
         return LogInResponseDto.builder()
@@ -110,12 +118,13 @@ public class AuthService {
         User user = token.getUser();
 
         // Generate new access token
-        String newAccessToken = jwtService.generateToken(user.getEmail());
+        String newAccessToken = jwtService.generateToken(user.getEmail(), Role.BRANCH_ADMIN);
 
         // Generate new refresh token
         String newRefreshToken = UUID.randomUUID().toString();
         LocalDateTime newRefreshExpiresAt = LocalDateTime.now().plusSeconds(refreshTokenExpiry);
 
+        System.out.println("Hello: expire " + newRefreshExpiresAt);
         // Save new refresh token and delete old one
         UserRefreshToken newTokenEntity = new UserRefreshToken();
         newTokenEntity.setUser(user);

@@ -22,7 +22,6 @@ public class ParentRefreshToken {
     @Column(name = "id")
     private Long id;
 
-//    @Column(nullable = false, unique = true)
     private String refreshToken;
 
     private LocalDateTime expiresAt;
